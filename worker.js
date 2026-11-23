@@ -51,6 +51,7 @@ async function getAccessToken(env, apiBase) {
   if (typeof data.access_token !== "string") {
     throw new Error("PayPal authentication response did not include a token");
   }
+
   return data.access_token;
 }
 
@@ -68,6 +69,7 @@ async function paypalRequest(apiBase, path, method, token, body) {
   if (!response.ok) {
     throw new Error(`PayPal API request failed (${response.status})`);
   }
+
   return data;
 }
 
@@ -257,6 +259,7 @@ export default {
       } catch {
         console.error("Affiliate commission needs reconciliation for order", orderId);
       }
+
       return json({
         verified: true,
         orderId,
