@@ -92,6 +92,21 @@ jobs:
             cp -a public/store/. public/
           fi
 
+      - name: Publish book links from both catalog paths
+        run: |
+          for id in $(seq 1 56); do
+            test -s "public/store/books/book-$id.html"
+            test -s "public/store/covers/book-$id.webp"
+          done
+
+          if [[ ! -f public/index.html ]]; then
+            cp -a public/store/. public/
+          else
+            mkdir -p public/books public/covers
+            cp -a public/store/books/. public/books/
+            cp -a public/store/covers/. public/covers/
+          fi
+
       - uses: actions/upload-pages-artifact@v4
         with:
           path: public
