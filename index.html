@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Pink Collar Affiliate Portal</title>
+  <link rel="stylesheet" href="../styles.css">
+  <script src="../payment-config.js" defer></script>
+  <script src="portal.js" defer></script>
+</head>
+<body class="book-sales-page">
+<main class="container section-spacing affiliate-portal">
+  <p><a href="../partnerships.html">The Pink Collar Collective</a></p>
+  <h1>Pink Collar Affiliate Portal</h1>
+  <p>Earn a starting commission of 15% on qualifying digital book sales. Higher commission tiers are based on qualifying referral clicks.</p>
+  <p><a href="../partnerships.html#partnership-form">Apply to become an affiliate</a></p>
+  <section class="request-panel">
+    <h2>Affiliate Dashboard</h2>
+    <form id="affiliate-login" class="request-form">
+      <label>Referral code <input name="code" required></label>
+      <label>Private access key <input name="token" type="password" required autocomplete="off"></label>
+      <button class="btn btn-primary">View my earnings</button>
+    </form>
+    <div id="affiliate-dashboard" hidden>
+      <p id="affiliate-totals"></p>
+      <label>Your shareable link <input id="affiliate-link" readonly></label>
+      <button type="button" id="copy-link" class="btn">Copy referral link</button>
+      <label>Promo caption <textarea id="affiliate-promo" rows="5"></textarea></label>
+      <button type="button" id="copy-promo" class="btn">Copy promo caption</button>
+    </div>
+    <p id="affiliate-status" role="status"></p>
+  </section>
+  <details class="request-panel">
+    <summary>Administrator access</summary>
+    <form id="affiliate-admin" class="request-form">
+      <label>Administrator access key <input name="token" type="password" required autocomplete="off"></label>
+      <label>Action
+        <select name="action">
+          <option value="list">View accounts, tiers, and recent commissions</option>
+          <option value="create">Create an affiliate account</option>
+          <option value="qualify">Set approved qualifying clicks</option>
+          <option value="tier">Set a higher commission tier</option>
+          <option value="settle">Record an external payout or void a commission</option>
+        </select>
+      </label>
+      <div id="admin-fields"></div>
+      <button class="btn btn-primary">Run administrator action</button>
+    </form>
+    <p id="admin-status" role="status"></p>
+    <label id="issued-key-label" hidden>New affiliate access key <input id="issued-key" readonly></label>
+    <section id="admin-results" hidden aria-label="Administrator results"></section>
+  </details>
+</main>
+</body>
+</html>
