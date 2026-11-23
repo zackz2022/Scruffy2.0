@@ -12,7 +12,9 @@ async function isAdministrator(token, secret) {
   const expected = await digest(secret);
   const actual = await digest(token);
   let difference = 0;
-  for (let i = 0; i < expected.length; i++) difference |= expected.charCodeAt(i) ^ actual.charCodeAt(i);
+  for (let i = 0; i < expected.length; i++) {
+    difference |= expected.charCodeAt(i) ^ actual.charCodeAt(i);
+  }
   return difference === 0;
 }
 
@@ -41,12 +43,14 @@ export async function affiliateApi(request, env, path, send) {
         typeof body.visitor !== "string" || !/^[a-f0-9-]{36}$/.test(body.visitor)) {
       return send({ error: "Invalid referral." }, 400);
     }
-    await db.prepare("INSERT OR IGNORE INTO affiliate_clicks (code, visitor) SELECT code, ? FROM affiliates WHERE code = ?").bind(body.visitor, code).run();
+    await db.prepare("INSERT OR IGNORE INTO affiliate_clicks (code, visitor) SELECT code, ? FROM affiliates WHERE code = ?")
+      .bind(body.visitor, code).run();
     return send({ recorded: true }, 200);
   }
 
   if (path === "/api/affiliate/stats") {
-    if (typeof code !== "string" || !codePattern.test(code) || typeof token !== "string" || !tokenPattern.test(token)) {
+    if (typeof code !== "string" || !codePattern.test(code) ||
+        typeof token !== "string" || !tokenPattern.test(token)) {
       return send({ error: "Invalid affiliate credentials." }, 401);
     }
     const account = await db.prepare("SELECT code FROM affiliates WHERE code = ? AND token_hash = ?")
@@ -65,7 +69,8 @@ export async function affiliateApi(request, env, path, send) {
     if (typeof code !== "string" || !codePattern.test(code) || !name || name.length > 100) {
       return send({ error: "Enter a name and a 3–40 character lowercase referral code." }, 400);
     }
-    const accessKey = [...crypto.getRandomValues(new Uint8Array(32))].map(byte => byte.toString(16).padStart(2, "0")).join("");
+    const accessKey = [...crypto.getRandomValues(new Uint8Array(32))]
+      .map(byte => byte.toString(16).padStart(2, "0")).join("");
     const result = await db.prepare("INSERT OR IGNORE INTO affiliates (code, name, token_hash) VALUES (?, ?, ?)")
       .bind(code, name, await digest(accessKey)).run();
     if (result.meta.changes !== 1) return send({ error: "That referral code is already in use." }, 409);
@@ -74,10 +79,15 @@ export async function affiliateApi(request, env, path, send) {
 
   if (body.action === "qualify") {
     if (typeof code !== "string" || !codePattern.test(code) ||
-        !Number.isSafeInteger(body.clicks) || body.clicks < 0) return send({ error: "Invalid qualifying click count." }, 400);
+        !Number.isSafeInteger(body.clicks) || body.clicks < 0) {
+      return send({ error: "Invalid qualifying click count." }, 400);
+    }
     const account = await affiliateStats(db, code);
-    if (!account || body.clicks > account.tracked_clicks) return send({ error: "Qualifying clicks cannot exceed tracked clicks." }, 400);
-    await db.prepare("UPDATE affiliates SET qualifying_clicks = ? WHERE code = ?").bind(body.clicks, code).run();
+    if (!account || body.clicks > account.tracked_clicks) {
+      return send({ error: "Qualifying clicks cannot exceed tracked clicks." }, 400);
+    }
+    await db.prepare("UPDATE affiliates SET qualifying_clicks = ? WHERE code = ?")
+      .bind(body.clicks, code).run();
     return send({ account: await affiliateStats(db, code) }, 200);
   }
 
@@ -94,10 +104,14 @@ export async function affiliateApi(request, env, path, send) {
         (minimum_clicks < ?1 AND rate_bps > ?2) OR (minimum_clicks > ?1 AND rate_bps < ?2)
       ) ON CONFLICT(minimum_clicks) DO UPDATE SET rate_bps = excluded.rate_bps
     `).bind(minimum, rate).run();
-    if (result.meta.changes !== 1) return send({ error: "Commission tiers must increase with qualifying clicks." }, 400);
+    if (result.meta.changes !== 1) {
+      return send({ error: "Commission tiers must increase with qualifying clicks." }, 400);
+    }
   } else if (body.action === "settle") {
     if (typeof body.order !== "string" || !/^[A-Za-z0-9-]{1,100}$/.test(body.order) ||
-        !["paid", "void"].includes(body.status)) return send({ error: "Invalid order or settlement status." }, 400);
+        !["paid", "void"].includes(body.status)) {
+      return send({ error: "Invalid order or settlement status." }, 400);
+    }
     const result = await db.prepare("UPDATE affiliate_orders SET status = ? WHERE order_id = ? AND status IN ('pending', 'paid')")
       .bind(body.status, body.order).run();
     if (result.meta.changes !== 1) return send({ error: "No matching commission entry." }, 404);
