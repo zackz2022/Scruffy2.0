@@ -72,6 +72,13 @@ jobs:
           if [[ ! -f gatsby-config.js && ! -f gatsby-config.ts && ! -f gatsby-config.mjs ]]; then
             printf '%s\n' 'module.exports = { pathPrefix: "/Scruffy2.0" };' > gatsby-config.js
           fi
+          
+     - name: Restore book pages and covers
+        run: |
+          mkdir -p static/store
+          unzip -oq "new improv scruffy.zip" \
+            'books/book-*.html' 'covers/book-*.webp' \
+           -d static/store
 
       - name: Install dependencies
         run: npm install
