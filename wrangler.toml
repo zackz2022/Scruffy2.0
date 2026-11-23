@@ -8,5 +8,5 @@ PAYPAL_ENVIRONMENT = "live"
 
 [[d1_databases]]
 binding = "AFFILIATES_DB"
-database_name = "scruffybutt-affiliates"
+database_name = "scruffybutt_affiliates"
 database_id = "47cd55d2-cba8-4d26-b4f8-de2f63c77a8a"
