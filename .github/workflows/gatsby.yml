@@ -30,55 +30,37 @@ jobs:
 
       - uses: actions/configure-pages@v5
 
-      - name: Organize storefront files
+      - name: Restore storefront and book pages
         shell: bash
         run: |
-          store=static/store
-          if ! grep -qi 'id="shopGrid"' "$store/index.html"; then
-            echo "Upload the main Scruffy Butt index.html from the ZIP to static/store/index.html."
+          archive="new improv scruffy.zip"
+          if [[ ! -f "$archive" ]]; then
+            archive="New-ImprovedScruffyButt-Pages.zip"
+          fi
+          if [[ ! -f "$archive" ]]; then
+            echo "The storefront ZIP is missing from the main repository file list."
             exit 1
           fi
 
-          mkdir -p "$store"/{books,covers,affiliates}
-          shopt -s nullglob
+          store=static/store
+          mkdir -p "$store"
 
-          for file in *.html; do
-            case "$file" in
-              index.html) ;;
-              book-[0-9]*.html) cp "$file" "$store/books/" ;;
-              *) cp "$file" "$store/" ;;
-            esac
-          done
+          unzip -on "$archive" \
+            '*.html' 'covers/book-*.webp' \
+            'styles.css' 'logo.png' 'IMG_3822.jpeg' 'paypal-donation.png' \
+            'script.js' 'showcase.js' 'payment-config.js' \
+            'affiliate-referral.js' 'affiliates/portal.js' \
+            -d "$store"
 
-          for file in book-[0-9]*.webp; do
-            cp "$file" "$store/covers/"
-          done
-
-          for file in styles.css logo.png IMG_3822.jpeg paypal-donation.png \
-              script.js showcase.js payment-config.js affiliate-referral.js; do
+          for file in styles.css script.js payment-config.js; do
             if [[ -f "$file" ]]; then
-              cp "$file" "$store/"
+              cp "$file" "$store/$file"
             fi
           done
-
-          if grep -qi 'The Pink Collar Affiliate Portal' index.html; then
-            cp index.html "$store/affiliates/index.html"
-          fi
-
-          if [[ -f portal.js ]]; then
-            cp portal.js "$store/affiliates/"
-          fi
 
           if [[ ! -f gatsby-config.js && ! -f gatsby-config.ts && ! -f gatsby-config.mjs ]]; then
             printf '%s\n' 'module.exports = { pathPrefix: "/Scruffy2.0" };' > gatsby-config.js
           fi
-          
-     - name: Restore book pages and covers
-        run: |
-          mkdir -p static/store
-          unzip -oq "new improv scruffy.zip" \
-            'books/book-*.html' 'covers/book-*.webp' \
-           -d static/store
 
       - name: Install dependencies
         run: npm install
@@ -86,13 +68,8 @@ jobs:
       - name: Build Gatsby site
         run: npm run build
 
-      - name: Use storefront as homepage if Gatsby has no homepage
-        run: |
-          if [[ ! -f public/index.html ]]; then
-            cp -a public/store/. public/
-          fi
-
-      - name: Publish book links from both catalog paths
+      - name: Publish books at both catalog paths
+        shell: bash
         run: |
           for id in $(seq 1 56); do
             test -s "public/store/books/book-$id.html"
